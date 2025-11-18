@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recommendations — FitPlanner</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+</head>
+<body class="container">
+  <nav class="topbar">
+    <div class="brand"><img src="{{ url_for('static', filename='img/logo.svg') }}" alt="logo"><div class="small">FitPlanner</div></div>
+    <div class="nav-actions">
+      <a class="btn outline" href="{{ url_for('dashboard') }}">← Dashboard</a>
+    </div>
+  </nav>
+  <div style="max-width:900px;margin:20px auto">
+    <div class="card">
+      <h3>💡 Personalized Recommendations</h3>
+      {% if ml_used %}
+        <p class="small" style="color:var(--accent);">🤖 <strong>ML-Powered:</strong> Recommendations are generated using machine learning based on your workout history!</p>
+      {% else %}
+        <p class="small">📊 <strong>Rule-Based:</strong> Using BMR calculations. Log more workouts (3+) to enable ML-powered recommendations.</p>
+      {% endif %}
+      
+      <div style="display:flex;gap:12px;margin-top:12px">
+        <div class="card" style="flex:1">
+          <h4>Calories</h4>
+          <p class="small">Maintenance: <strong>{{ suggestions['maintenance_kcal'] }}</strong> kcal/day</p>
+          <p class="small">To lose weight: <strong>{{ suggestions['weight_loss_kcal'] }}</strong> kcal/day</p>
+          <p class="small">To gain weight: <strong>{{ suggestions['weight_gain_kcal'] }}</strong> kcal/day</p>
+        </div>
+        <div class="card" style="flex:1">
+          <h4>Protein</h4>
+          <p class="small">Recommended protein intake: <strong>{{ suggestions['protein_g_per_day'] }} g/day</strong></p>
+        </div>
+      </div>
+      
+      <div style="margin-top:12px">
+        <h4>Recommended Workout</h4>
+        {% if suggestions.get('predicted_workout') %}
+          <p class="small"><strong style="color:var(--accent);">{{ suggestions['predicted_workout'] }}</strong> — 
+          {% if ml_used %}ML-predicted based on your patterns{% else %}Suggested workout type{% endif %}</p>
+        {% endif %}
+      </div>
+      
+      <div style="margin-top:12px">
+        <h4>Workout History</h4>
+        {% if recent %}
+          <ul class="list">{% for r in recent %}<li>{{ r['workout_type'] }} — done {{ r['cnt'] }} time(s)</li>{% endfor %}</ul>
+        {% else %}
+          <p class="small">No workouts recorded yet. Start with 3 sessions/week: 2 cardio, 1 strength.</p>
+        {% endif %}
+      </div>
+      
+      <!-- Sleep Quality Analysis -->
+      {% if sleep_quality and sleep_quality.quality != 'unknown' %}
+        <div class="card" style="margin-top:12px;background:rgba(125,227,178,0.1);border-color:rgba(125,227,178,0.3);">
+          <h4>😴 Sleep Quality Analysis</h4>
+          <p class="small">Quality: <strong style="color:var(--accent);">{{ sleep_quality.quality|title }}</strong> 
+          (Score: {{ (sleep_quality.score * 100)|round(0) }}%)</p>
+          <p class="small">Average: {{ sleep_quality.avg_sleep }} hours | Latest: {{ sleep_quality.latest_sleep }} hours</p>
+          <p class="small" style="margin-top:8px;">{{ sleep_quality.recommendation }}</p>
+        </div>
+      {% endif %}
+      
+      <!-- Adherence Analysis -->
+      {% if skipped and skipped.skipped %}
+        <div class="card" style="margin-top:12px;background:rgba(255,122,89,0.1);border-color:rgba(255,122,89,0.3);">
+          <h4>📊 Adherence Analysis</h4>
+          <p class="small">Adherence Rate: <strong>{{ (skipped.adherence_rate * 100)|round(0) }}%</strong></p>
+          <p class="small">Completed: {{ skipped.completed_count }} / {{ skipped.total_scheduled }} workouts</p>
+          {% if skipped.skipped %}
+            <p class="small" style="color:var(--accent2);margin-top:8px;">⚠️ {{ skipped.skipped|length }} skipped workout(s) detected</p>
+            <p class="small">The system will automatically adjust your schedule to improve consistency.</p>
+          {% endif %}
+        </div>
+      {% endif %}
+      
+      <div style="margin-top:16px;">
+        <a class="btn outline" href="{{ url_for('schedule') }}">View My Schedule</a>
+      </div>
+    </div>
+  </div>
+</body></html>

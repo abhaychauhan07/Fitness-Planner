@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community — FitPlanner</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+</head>
+<body class="container">
+  <nav class="topbar">
+    <div class="brand"><img src="{{ url_for('static', filename='img/logo.svg') }}" alt="logo"><div class="small">FitPlanner</div></div>
+    <div class="nav-actions">
+      <a class="btn outline" href="{{ url_for('dashboard') }}">← Dashboard</a>
+    </div>
+  </nav>
+  <div style="max-width:900px;margin:20px auto">
+    <div class="card">
+      <h3>🏆 Leaderboard</h3>
+    <ul class="leaderboard">
+      {% for row in leaderboard %}
+        <li>{{ loop.index }}. {{ row['name'] }} <span class="small">{{ row['points'] }} pts</span></li>
+      {% else %}
+        <li class="small">No community data.</li>
+      {% endfor %}
+    </ul>
+    <div style="margin-top:12px">
+      <h4>Your stats</h4>
+      {% if me %}
+        <p class="small">Points: <strong>{{ me['points'] }}</strong></p>
+        <p class="small">Badges: <span class="badge">{{ me['badges'] }}</span></p>
+      {% else %}
+        <p class="small">Join to earn points.</p>
+      {% endif %}
+    </div>
+    
+    <!-- Active Challenges -->
+    {% if active_challenges %}
+      <div style="margin-top:20px">
+        <h4>🏆 Active Challenges</h4>
+        <ul class="list" style="list-style:none;padding:0;">
+          {% for challenge in active_challenges %}
+            <li style="padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.03);">
+              <div style="font-weight:600;">{{ challenge['name'] }}</div>
+              <div class="small">{{ challenge['description'] }}</div>
+              <div class="small" style="color:var(--accent);margin-top:4px;">
+                Reward: {{ challenge['points_reward'] }} points
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+        <p style="margin-top:12px;"><a class="btn outline" href="{{ url_for('challenges') }}" style="width:100%;text-align:center;">View All Challenges</a></p>
+      </div>
+    {% else %}
+      <div style="margin-top:20px">
+        <h4>🏆 Challenges</h4>
+        <p class="small">No active challenges. <a href="{{ url_for('challenges') }}" style="color:var(--accent);">Join or create one!</a></p>
+      </div>
+    {% endif %}
+    
+    <!-- My Challenges -->
+    {% if my_challenges %}
+      <div style="margin-top:20px">
+        <h4>My Challenges</h4>
+        <ul class="list" style="list-style:none;padding:0;">
+          {% for challenge in my_challenges %}
+            <li style="padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.03);">
+              <div style="font-weight:600;">{{ challenge['name'] }}</div>
+              <div class="small">Progress: {{ challenge['progress_value'] }} / {{ challenge['target_value'] }}</div>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    </div>
+  </div>
+</body></html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Workout — FitPlanner</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+</head>
+<body class="container">
+  <div style="max-width:560px;margin:20px auto">
+    <div class="card form">
+      <h3>💪 Add Workout</h3>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="flashes">
+          {% for category, msg in messages %}
+            <li class="{{ category }}">{{ msg }}</li>
+          {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+      <form method="post" class="form">
+        <label class="small" style="display:block;margin-bottom:4px;color:var(--muted);">Date</label>
+        <input name="date" type="date" required>
+        <label class="small" style="display:block;margin-bottom:4px;color:var(--muted);">Workout Type</label>
+        <input name="workout_type" placeholder="e.g., Running, Weightlifting, Cycling" required list="workout-types">
+        <datalist id="workout-types">
+          <option value="Running">
+          <option value="Cycling">
+          <option value="Swimming">
+          <option value="Weightlifting">
+          <option value="Yoga">
+          <option value="Pilates">
+          <option value="HIIT">
+          <option value="Walking">
+        </datalist>
+        <label class="small" style="display:block;margin-bottom:4px;color:var(--muted);">Duration (minutes)</label>
+        <input name="duration" placeholder="Duration in minutes" type="number" min="1" required>
+        <label class="small" style="display:block;margin-bottom:4px;color:var(--muted);">Calories Burned</label>
+        <input name="calories" placeholder="Estimated calories burned" type="number" min="0" required>
+        <label class="small" style="display:block;margin-bottom:4px;color:var(--muted);">Notes (optional)</label>
+        <textarea name="notes" placeholder="Add any notes about your workout..." maxlength="500"></textarea>
+        <button type="submit" class="btn" style="margin-top:8px;width:100%;">Add Workout</button>
+      </form>
+      <p class="small" style="margin-top:16px;text-align:center;"><a href="{{ url_for('dashboard') }}" style="color:var(--accent);">← Back to Dashboard</a></p>
+    </div>
+  </div>
+</body></html>

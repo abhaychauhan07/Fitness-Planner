@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workout Schedule — FitPlanner</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+</head>
+<body class="container">
+  <nav class="topbar">
+    <div class="brand"><img src="{{ url_for('static', filename='img/logo.svg') }}" alt="logo"><div class="small">FitPlanner</div></div>
+    <div class="nav-actions">
+      <a class="btn outline" href="{{ url_for('dashboard') }}">← Dashboard</a>
+    </div>
+  </nav>
+  
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="container" style="margin-top:16px;">
+        <ul class="flashes">
+        {% for category, msg in messages %}
+          <li class="{{ category }}">{{ msg }}</li>
+        {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  {% endwith %}
+  
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h2>📅 Workout Schedule</h2>
+      <form method="post" action="{{ url_for('generate_schedule') }}" style="margin:0;">
+        <button type="submit" class="btn">Generate Weekly Schedule</button>
+      </form>
+    </div>
+
+    <!-- Sleep Quality & Adherence Analysis -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+      <div class="card">
+        <h4>😴 Sleep Quality</h4>
+        {% if sleep_quality.quality != 'unknown' %}
+          <p class="small">Quality: <strong style="color:var(--accent);">{{ sleep_quality.quality|title }}</strong></p>
+          <p class="small">Average: {{ sleep_quality.avg_sleep }} hours</p>
+          <p class="small">Latest: {{ sleep_quality.latest_sleep }} hours</p>
+          <p class="small" style="margin-top:8px;">{{ sleep_quality.recommendation }}</p>
+        {% else %}
+          <p class="small">No sleep data available. Log wearable data to see analysis.</p>
+        {% endif %}
+      </div>
+      
+      <div class="card">
+        <h4>📊 Adherence Rate</h4>
+        <p class="small">Completed: <strong>{{ skipped.completed_count }}</strong> / {{ skipped.total_scheduled }}</p>
+        <p class="small">Rate: <strong style="color:var(--accent);">{{ (skipped.adherence_rate * 100)|round(0) }}%</strong></p>
+        {% if skipped.skipped %}
+          <p class="small" style="color:var(--accent2);margin-top:8px;">⚠️ {{ skipped.skipped|length }} skipped workout(s)</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Automatic Adjustments -->
+    {% if adjustment and adjustment.adjustments %}
+      <div class="card" style="background:rgba(255,122,89,0.1);border-color:rgba(255,122,89,0.3);margin-bottom:20px;">
+        <h4>⚙️ Automatic Adjustments</h4>
+        {% for adj in adjustment.adjustments %}
+          <p class="small" style="margin:4px 0;">• {{ adj.message }}</p>
+        {% endfor %}
+        {% if adjustment.recommendations %}
+          <p class="small" style="margin-top:8px;"><strong>Recommendations:</strong></p>
+          {% for rec in adjustment.recommendations %}
+            <p class="small" style="margin:4px 0;">• {{ rec }}</p>
+          {% endfor %}
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <!-- Workout Schedule -->
+    <div class="card">
+      <h4>Upcoming Workouts</h4>
+      {% if schedule %}
+        <ul class="list" style="list-style:none;padding:0;">
+          {% for item in schedule %}
+            <li style="display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px dashed rgba(255,255,255,0.03);">
+              <div>
+                <div style="font-weight:600;">{{ item['scheduled_date'] }} — {{ item['workout_type'] }}</div>
+                <div class="small">Duration: {{ item['duration_min'] }} min | Status: 
+                  <span style="color:{% if item['status'] == 'completed' %}var(--accent){% elif item['status'] == 'pending' %}var(--muted){% else %}var(--accent2){% endif %};">
+                    {{ item['status']|title }}
+                  </span>
+                </div>
+              </div>
+              {% if item['status'] == 'pending' %}
+                <form method="post" action="{{ url_for('complete_schedule', schedule_id=item['id']) }}" style="margin:0;">
+                  <button type="submit" class="btn" style="padding:6px 12px;font-size:12px;">Mark Complete</button>
+                </form>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="small">No workouts scheduled. Generate a weekly schedule to get started!</p>
+      {% endif %}
+    </div>
+
+    <!-- Skipped Workouts -->
+    {% if skipped and skipped.skipped %}
+      <div class="card" style="margin-top:12px;background:rgba(255,122,89,0.1);border-color:rgba(255,122,89,0.3);">
+        <h4>⚠️ Skipped Workouts</h4>
+        <ul class="list" style="list-style:none;padding:0;">
+          {% for skip in skipped.skipped %}
+            <li class="small" style="padding:8px 0;">
+              {{ skip.date }} — {{ skip.workout_type }} ({{ skip.days_ago }} day(s) ago)
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>
+

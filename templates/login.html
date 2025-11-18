@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — FitPlanner</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+</head>
+<body class="container">
+  <div style="max-width:420px;margin:24px auto">
+    <div class="card form">
+      <h2>Welcome back</h2>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="flashes">
+          {% for category, msg in messages %}
+            <li class="{{ category }}">{{ msg }}</li>
+          {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+      <form method="post" class="form">
+        <input name="email" placeholder="Email" type="email" required>
+        <input name="password" placeholder="Password" type="password" required>
+        <button class="btn">Login</button>
+      </form>
+      <p class="small">New? <a href="{{ url_for('signup') }}">Create account</a></p>
+    </div>
+  </div>
+</body></html>
